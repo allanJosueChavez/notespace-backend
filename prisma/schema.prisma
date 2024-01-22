@@ -1,0 +1,28 @@
+ 
+datasource db {
+  provider = "postgresql"
+  url      = env("DB_URL")
+}
+generator client {
+  provider = "prisma-client-js"
+ 
+}
+
+model Note {
+  id      Int      @id @default(autoincrement())
+  userId  Int
+ user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title   String
+  content String
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  name      String?
+  password  String
+  verified  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  note     Note[]
+}
