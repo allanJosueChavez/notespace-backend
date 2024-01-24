@@ -1,6 +1,7 @@
 import { IsBoolean, IsEmail, IsNotEmpty, IsString } from 'class-validator';
+import { empty } from 'rxjs';
 
-export class UserDto {
+export class CreateUserDto {
   @IsEmail()
   @IsNotEmpty()
   email: string;
@@ -12,11 +13,7 @@ export class UserDto {
   @IsNotEmpty()
   @IsString()
   username: string;
-
-  @IsBoolean()
-  verified: boolean; 
 }
 
-// Question: Do I have to create a dto for every model or for every controller or function? 
+// Question: Do I have to create a dto for every model or for every controller or function?
 // what about creating and updating they don't require the same attributes, in that case I would need two dtos for the same model.
-

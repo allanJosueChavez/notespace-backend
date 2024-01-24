@@ -8,7 +8,7 @@ import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 export class AuthService {
   constructor(private prisma: PrismaService) {}
 
-  async login(dto: AuthDto) {
+  async signin(dto: AuthDto) {
     try {
       const user = await this.prisma.user.findUnique({
         where: {
@@ -18,8 +18,8 @@ export class AuthService {
       if (!user) {
         throw new ForbiddenException('Invalid credentials');
       }
-      const isPasswordValid = await argon.verify(user.password, dto.password);
-      if (!isPasswordValid) {
+      const pwMatches = await argon.verify(user.password, dto.password);
+      if (!pwMatches) {
         throw new ForbiddenException('Invalid credentials');
       }
       delete user.password;
@@ -29,7 +29,7 @@ export class AuthService {
     }
   }
 
-  // Right now I'm using the same dto for signup and login. But I wanna have two 
+  // Right now I'm using the same dto for signup and signin. But I wanna have two
   // Because when creating a new user I want to have more attributes like name, lastname, etc.
   // AuthDto is a good name for the signin, but fort the signup an excellent name would be either CreateUserDto or UserDto
   async signup(dto: AuthDto) {
@@ -41,7 +41,7 @@ export class AuthService {
       // save the new user in the database
       const user = await this.prisma.user.create({
         data: {
-          email: dto.email,
+          ...dto,
           password: hash,
         },
         //   select: {
