@@ -4,14 +4,16 @@ import * as argon from 'argon2';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable({})
 export class AuthService {
   constructor(
     private prisma: PrismaService,
-    private jwtService: JwtService,
+    private jwt: JwtService,
+    private config: ConfigService, // word private is to create a property in the class
   ) {}
-
+ 
   async signin(dto: AuthDto) {
     try {
       const user = await this.prisma.user.findUnique({
@@ -27,7 +29,12 @@ export class AuthService {
         throw new ForbiddenException('Invalid credentials');
       }
       delete user.password;
-      return user;
+    //   return {
+    //     message: 'User logged in',
+    //     user,
+    //     token: await this.signToken(user.id, user.email),
+    //   };
+    return await this.signToken(user.id, user.email);
     } catch (error) {
       throw error;
     }
@@ -67,15 +74,23 @@ export class AuthService {
     }
   }
 
-  async signToken(userId: number, email: string) {
-    const data = {
-        sub : userId,
-        email
+  async signToken(userId: number, email: string) : Promise<{access_token: string}>
+  // Types of typescript functions could be void, number, string, etc.
+  // The word Promise after the colon represents 
+  {
+    const configSecret = this.config.get<string>('JWT_SECRET');
+    // <string> is 
+    const envSecret = process.env.JWT_SECRET;
+    const payload = {
+      sub: userId,
+      email,
     };
-    return this.jwtService.sign(data, {
-        // expiresIn: '1d'
-        expiresIn: '15m',
-        secret: process.env.JWT_SECRET
+    const token = await  this.jwt.signAsync(payload, {
+      secret: configSecret,
+      expiresIn: '15m',
     });
+    return {
+        access_token: token,
+    }
   }
 }
