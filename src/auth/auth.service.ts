@@ -13,7 +13,7 @@ export class AuthService {
     private jwt: JwtService,
     private config: ConfigService, // word private is to create a property in the class
   ) {}
- 
+
   async signin(dto: AuthDto) {
     try {
       const user = await this.prisma.user.findUnique({
@@ -29,12 +29,12 @@ export class AuthService {
         throw new ForbiddenException('Invalid credentials');
       }
       delete user.password;
-    //   return {
-    //     message: 'User logged in',
-    //     user,
-    //     token: await this.signToken(user.id, user.email),
-    //   };
-    return await this.signToken(user.id, user.email);
+      //   return {
+      //     message: 'User logged in',
+      //     user,
+      //     token: await this.signToken(user.id, user.email),
+      //   };
+      return await this.signToken(user.id, user.email);
     } catch (error) {
       throw error;
     }
@@ -74,23 +74,25 @@ export class AuthService {
     }
   }
 
-  async signToken(userId: number, email: string) : Promise<{access_token: string}>
-  // Types of typescript functions could be void, number, string, etc.
-  // The word Promise after the colon represents 
-  {
+  async signToken(
+    userId: number,
+    email: string,
+  ): Promise<{ access_token: string }> {
+    // Types of typescript functions could be void, number, string, etc.
+    // The word Promise after the colon represents
     const configSecret = this.config.get<string>('JWT_SECRET');
-    // <string> is 
+    // <string> is
     const envSecret = process.env.JWT_SECRET;
     const payload = {
       sub: userId,
       email,
     };
-    const token = await  this.jwt.signAsync(payload, {
+    const token = await this.jwt.signAsync(payload, {
       secret: configSecret,
       expiresIn: '15m',
     });
     return {
-        access_token: token,
-    }
+      access_token: token,
+    };
   }
 }
