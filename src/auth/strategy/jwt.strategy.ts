@@ -26,12 +26,18 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     if (!user) {
       throw new Error('User not found');
     }
-    return user;
+    return user; 
+    
+    // This user is returned to the request object. So we can use it in the controller
     // Common error if you don't return anything. You get a 401 error.
   }
   // The Passport Strategy validates the header of the request and if it is valid it returns the payload of the JWT.
   // The validate method is called by the Passport Strategy and it returns the payload of the JWT once it's determinated its validity.
 }
+
+
+
+
 
 // A strategy is a design pattern that allows you to provide a unique implementation for a family of algorithms.
 // Therefore it must contain the @Injectable() decorator in order to be injected in other classes. In this case the JwtStrategy class is injected in the AuthModule.
