@@ -1,4 +1,4 @@
-import { Controller, Post, Req, Body } from '@nestjs/common';
+import { Controller, Post, Req, Body, HttpCode, HttpStatus } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Request } from 'express';
 import { AuthDto, CreateUserDto } from './dto';
@@ -10,6 +10,8 @@ export class AuthController {
   //2. In the controller we need to use a constructor and pass the service as an argument.
   constructor(private authService: AuthService) {}
 
+  // @HttpCode(200) or
+  @HttpCode(HttpStatus.OK)
   @Post('signup')
   signup(@Body() dto: CreateUserDto) {
     return this.authService.signup(dto);

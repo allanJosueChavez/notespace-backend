@@ -1,24 +1,45 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
+import { before } from "node:test";
 import * as request from 'supertest';
-import { AppModule } from './../src/app.module';
+import { AuthModule } from '../src/auth/auth.module';
+import { AuthService } from '../src/auth/auth.service';
+import { INestApplication } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
+ 
+describe('App e2e', () => {
+  before(async () => {
+    // const module: TestingModule = await Test.createTestingModule({
+    //   imports: [AppModule],
+    // }).compile();
+    // app = module.createNestApplication();
+    // await app.init();
+  }
+  );
+  it('should be defined', () => {
+    expect(true).toBe(true);
+  });
+})
 
-describe('AppController (e2e)', () => {
+
+describe('Auth', () => {
   let app: INestApplication;
-
-  beforeEach(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
+  beforeAll(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      imports: [AuthModule],
     }).compile();
 
-    app = moduleFixture.createNestApplication();
-    await app.init();
+    app = module.createNestApplication();
   });
 
-  it('/ (GET)', () => {
-    return request(app.getHttpServer())
-      .get('/')
-      .expect(200)
-      .expect('Hello World!');
+  it('POST /auth/signup', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/auth/signup')
+      .send({
+        email: '',
+        password: 'password',
+      })
+      .expect(201);
+  });
+  afterAll(async () => {
+    await app.close();
   });
 });
