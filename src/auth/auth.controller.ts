@@ -11,7 +11,8 @@ export class AuthController {
   constructor(private authService: AuthService) {}
 
   // @HttpCode(200) or
-  @HttpCode(HttpStatus.OK)
+  @HttpCode(HttpStatus.OK) 
+  // If you don't use any of these decorators, the default status code is 201 because it's a POST request
   @Post('signup')
   signup(@Body() dto: CreateUserDto) {
     return this.authService.signup(dto);
