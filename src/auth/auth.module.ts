@@ -3,9 +3,23 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './strategy';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
-  imports: [JwtModule.register({})], // JwtModule.register({}) is needed in order to use the JwtModule in the AuthModule.
+  imports: [  
+    
+    JwtModule.registerAsync({
+      imports: [ConfigModule], // Import ConfigModule to use ConfigService
+      useFactory: async (configService: ConfigService) => ({
+        secret: configService.get('JWT_SECRET'),
+        signOptions: {
+          expiresIn: configService.get('JWT_EXPIRATION_TIME'),
+        },
+      }),
+        inject: [ConfigService], // Inject ConfigService
+    }),
+    ConfigModule.forRoot(), // Import and configure ConfigModule
+  ], // JwtModule.register({}) is needed in order to use the JwtModule in the AuthModule.
   // once the jwtmodule is imported in the authModule the jwtService is available to be injected in the authservice.
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy],
@@ -20,3 +34,14 @@ import { JwtStrategy } from './strategy';
   // AuthGuard('jwt') can be used in the NoteModule.
 })
 export class AuthModule {}
+
+
+
+
+
+
+
+
+
+
+ 

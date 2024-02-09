@@ -1,7 +1,7 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { AuthDto } from './dto';
 import * as argon from 'argon2';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -45,7 +45,6 @@ export class AuthService {
   // AuthDto is a good name for the signin, but fort the signup an excellent name would be either CreateUserDto or UserDto
   async signup(dto: AuthDto) {
     console.log('signup from auth service');
-
     try {
       // Generate the password has
       const hash = await argon.hash(dto.password);
