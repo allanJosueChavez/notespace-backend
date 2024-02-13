@@ -10,6 +10,8 @@ import { ValidationPipe } from '@nestjs/common';
 import { UserService } from '../src/user/user.service';
 import { UserController } from '../src/user/user.controller';
 import * as pactum from 'pactum';
+import { AuthDto } from '../src/auth/dto/auth.dto';
+import { PrismaService } from '../src/prisma/prisma.service';
 
 describe('unit_UsersController ', () => {
   let usersController: UserController;
@@ -28,14 +30,14 @@ describe('unit_UsersController ', () => {
   // };
   //
 
-  describe('getMe', () => {
+  describe('getMe endpoint.', () => {
     // let service : UserService;
     it('should return the logged user', async () => {
       const user = {
         id: 1,
         email: faker.internet.email(),
         password: faker.internet.password(),
-        username: faker.name.firstName(),
+        username: faker.internet.userName(),
         verified: true,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -51,29 +53,6 @@ describe('unit_UsersController ', () => {
   });
 });
 
-// describe('Auth', () => {
-//   let app: INestApplication;
-//   beforeAll(async () => {
-//     const module: TestingModule = await Test.createTestingModule({
-//       imports: [AuthModule],
-//     }).compile();
-
-//     app = module.createNestApplication();
-//   });
-
-//   it('POST /auth/signup', async () => {
-//     const response = await request(app.getHttpServer())
-//       .post('/auth/signup')
-//       .send({
-//         email: '',
-//         password: 'password',
-//       })
-//       .expect(201);
-//   });
-//   afterAll(async () => {
-//     await app.close();
-//   });
-// });
 
 describe('Auth (e2e)', () => {
   let app: INestApplication;
@@ -119,4 +98,100 @@ describe('Auth (e2e)', () => {
 
  // the difference between supertest and jest is that supertest is used to test the endpoints of the application. Jest is used to test the logic of the application.
 
+});
+
+
+
+describe('App e2e', () => {
+  let app: INestApplication;
+  let prisma: PrismaService;
+
+  beforeAll(async () => {
+    const moduleRef =
+      await Test.createTestingModule({
+        imports: [AppModule],
+      }).compile();
+
+    app = moduleRef.createNestApplication();
+    app.useGlobalPipes(
+      new ValidationPipe({
+        whitelist: true,
+      }),
+    );
+    await app.init();
+    await app.listen(3333);
+
+    prisma = app.get(PrismaService);
+    // to clean the database before each test with the following code:
+    // await prisma.user.deleteMany();
+    pactum.request.setBaseUrl(
+      'http://localhost:3333',
+    );
+  });
+
+  afterAll(() => {
+    app.close();
+  });
+
+  describe('Auth', () => {
+    const dto: AuthDto = {
+      email:  faker.internet.email(),
+      password:   faker.internet.password(),
+    };
+    console.log('dto', dto)
+
+    describe('Signup', () => {
+      it('should throw if email empty', () => {
+        return pactum
+          .spec()
+          .post('/auth/signup')
+          .withBody({
+            password: dto.password,
+          })
+          .expectStatus(400);
+      });
+    });
+
+    describe('Signin', () => {
+      it('should throw if email empty', () => {
+        return pactum
+          .spec()
+          .post('/auth/signin')
+          .withBody({
+            password: dto.password,
+          })
+          .expectStatus(400);
+      });
+      it('should throw if password empty', () => {
+        return pactum
+          .spec()
+          .post('/auth/signin')
+          .withBody({
+            email: dto.email,
+          })
+          .expectStatus(400);
+      });
+      it('should throw if no body provided', () => {
+        return pactum
+          .spec()
+          .post('/auth/signin')
+          .expectStatus(400);
+    
+      });
+
+      it('should signin', () => {
+        return pactum
+          .spec()
+          .post('/auth/signin')
+          .withBody({
+            email: 'allanjosue.dev@gmail.com',
+            password: "232342"
+          
+          })
+          .expectStatus(201)
+          .stores('userAt', 'access_token');
+      });
+    });
+  });
+ 
 });
